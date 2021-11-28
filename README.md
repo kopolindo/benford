@@ -13,6 +13,6 @@ If they are then we can judge security assessment outcomes (big big big numbers 
 True, false, blah, not important, hack wanna hack, just "fun'n'profit" ;)
 
 ## Program
-Choice: go
-Why: concurrency
+Choice: go  
+Why: concurrency  
 Result: go...home Alex... :(
