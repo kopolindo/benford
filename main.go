@@ -23,7 +23,7 @@ func compliance(SSD float64) string {
 	case ssd < 2.0:
 		result = "perfect"
 	case ssd < 25.0:
-		result = "meh"
+		result = "quite good"
 	case ssd < 100.0:
 		result = "not good"
 	case ssd >= 100.0:
@@ -34,13 +34,13 @@ func compliance(SSD float64) string {
 	return result
 }
 
-func SSD(input [9]float64, TOT int) float64 {
+func SSD(input map[int]float64, TOT int) float64 {
 	ssd := 0.0
-	for i, p := range input {
-		fmt.Printf("\"%d\";\"%v\";\"%v\"\n", i+1, p, thProbs[i])
-		ssd += math.Pow(float64(TOT)*(p-thProbs[i]), 2)
+	for i := 0; i < len(input); i++ {
+		//fmt.Printf("\"%d\";\"%v\";\"%v\"\n", i+1, input[i+1], thProbs[i])
+		ssd += math.Pow((thProbs[i] - input[i+1]), 2)
 	}
-	return ssd
+	return math.Round((10000*ssd)*100) / 100
 }
 
 func calcOccurrences(input []int) (out map[int]float64) {
@@ -79,10 +79,12 @@ func main() {
 		keys = append(keys, k)
 	}
 	sort.Ints(keys)
-	for _, k := range keys {
-		fmt.Println(k, occurrences[k])
-	}
+	/*
+		for _, k := range keys {
+			fmt.Println(k, occurrences[k])
+		}*/
 	Hist(occurrences)
-	//ssd := SSD(occurrences, TOT)
+	ssd := SSD(occurrences, TOT)
+	fmt.Println(ssd)
 	//fmt.Println(compliance(ssd))
 }
