@@ -12,12 +12,15 @@ type riskDistribution struct {
 	percentage float64
 }
 
-var realCVSSDistribution = [4]riskDistribution{
-	{"C", 9.0, 10.0, 0.115},
-	{"H", 7.0, 8.9, 0.207},
-	{"M", 4.0, 6.9, 0.574},
-	{"L", 0.0, 3.9, 0.104},
-}
+var (
+	CVEPercentageDistribution []float64
+	realCVSSDistribution      = [4]riskDistribution{
+		{"C", 9.0, 10.0, 0.115},
+		{"H", 7.0, 8.9, 0.207},
+		{"M", 4.0, 6.9, 0.574},
+		{"L", 0.0, 3.9, 0.104},
+	}
+)
 
 func firstLeftDigit(a float64) int {
 	if a < 10.0 {
@@ -29,10 +32,15 @@ func firstLeftDigit(a float64) int {
 
 func GenerateFirstDigitCVSSScores(tot int) []int {
 	var FirstDigitCVSSScores []int
-	for _, risk := range realCVSSDistribution {
-		//fmt.Println("Printing", risk.level, "scores (", risk.minScore, ",", risk.maxScore, ")")
-		for i := 0; i < int(risk.percentage*float64(tot)); i++ {
-			fld := firstLeftDigit(math.Exp(risk.minScore + rand.Float64()*(risk.maxScore-risk.minScore)))
+	for _, r := range realCVSSDistribution {
+		CVEPercentageDistribution = append(CVEPercentageDistribution, r.percentage)
+	}
+	quantities := GenerateParts(CVEPercentageDistribution, tot)
+	for i, risk := range realCVSSDistribution {
+		for k := 0; k < quantities[i]; k++ {
+			score := math.Round((risk.minScore+rand.Float64()*(risk.maxScore-risk.minScore))*10) / 10
+			//fmt.Println(score)
+			fld := firstLeftDigit(math.Exp(score))
 			FirstDigitCVSSScores = append(FirstDigitCVSSScores, fld)
 		}
 	}

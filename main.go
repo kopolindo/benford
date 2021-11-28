@@ -5,6 +5,8 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"sort"
+	"strconv"
 	"time"
 )
 
@@ -32,20 +34,55 @@ func compliance(SSD float64) string {
 	return result
 }
 
-func SSD(input [9]float64) float64 {
+func SSD(input [9]float64, TOT int) float64 {
 	ssd := 0.0
 	for i, p := range input {
-		ssd += math.Pow((p - thProbs[i]), 2)
+		fmt.Printf("\"%d\";\"%v\";\"%v\"\n", i+1, p, thProbs[i])
+		ssd += math.Pow(float64(TOT)*(p-thProbs[i]), 2)
 	}
 	return ssd
 }
 
+func calcOccurrences(input []int) (out map[int]float64) {
+	tot := 0
+	tmp := map[int]int{
+		1: 0,
+		2: 0,
+		3: 0,
+		4: 0,
+		5: 0,
+		6: 0,
+		7: 0,
+		8: 0,
+		9: 0,
+	}
+	out = make(map[int]float64)
+	for _, i := range input {
+		tmp[i]++
+	}
+	for _, v := range tmp {
+		tot += v
+	}
+	for k, v := range tmp {
+		out[k] = float64(v) / float64(tot)
+	}
+	return
+}
+
 func main() {
+	var keys []int
+	TOT, _ := strconv.Atoi(os.Args[1])
 	rand.Seed(time.Now().UnixNano())
-	//fmt.Println("Benford")
-	/*ssd := SSD(test)
-	fmt.Println(ssd)
-	fmt.Println(compliance(ssd))*/
-	fdCVSSScores := GenerateFirstDigitCVSSScores(1500)
-	fmt.Println(len(fdCVSSScores))
+	fdCVSSScores := GenerateFirstDigitCVSSScores(TOT)
+	occurrences := calcOccurrences(fdCVSSScores)
+	for k := range occurrences {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+	for _, k := range keys {
+		fmt.Println(k, occurrences[k])
+	}
+	Hist(occurrences)
+	//ssd := SSD(occurrences, TOT)
+	//fmt.Println(compliance(ssd))
 }
