@@ -1,7 +1,7 @@
 # Benford && CVSS
 ## Who
-@kopolindo  
-@giorgiofox (original idea)
+[@kopolindo](https://github.com/kopolindo)  
+[@giorgiofox](https://github.com/giorgiofox) (original idea)
 
 ## Thanks to
 Alex Ely Kossovsky for the awesome statistical review of Chi-Square vs SSD on Benford distributions.
