@@ -1,6 +1,6 @@
 # Benford && CVSS
 ## Who
-@kopolind
+@kopolindo  
 @giorgiofox (original idea)
 
 ## Thanks to
