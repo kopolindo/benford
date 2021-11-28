@@ -83,7 +83,6 @@ func main() {
 		for _, k := range keys {
 			fmt.Println(k, occurrences[k])
 		}*/
-	Hist(occurrences)
 	ssd := SSD(occurrences, TOT)
 	fmt.Println(ssd)
 	//fmt.Println(compliance(ssd))

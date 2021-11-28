@@ -2,3 +2,4 @@ benford
 .gitignore
 *.swp
 *.png
+output/
