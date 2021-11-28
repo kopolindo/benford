@@ -1,4 +1,11 @@
 # Benford && CVSS
+## Who
+@kopolind
+@giorgiofox (original idea)
+
+## Thanks to
+Alex Ely Kossovsky for the awesome statistical review of Chi-Square vs SSD on Benford distributions.
+
 ## Reason
 We are trying to understand if security assessment results are Benford-like.  
 If they are then we can judge security assessment outcomes (big big big numbers must be involved).  
