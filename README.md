@@ -22,7 +22,7 @@ True, false, blah, not important, hack wanna hack, just "fun'n'profit" ;)
 ## Program
 Choice: go  
 Why: concurrency  
-Result: go...home Alex... :(
+Result: go...home Alex... :(  
 
 ## Benchmarks
 
@@ -49,4 +49,28 @@ parallel ./benford ::: 100000000  10.77s user 1.94s system 109% cpu 11.613 total
 10^9
 ./benford 1000000000  393.67s user 221.88s system 117% cpu 8:43.28 total
 parallel ./benford ::: 1000000000  392.62s user 226.67s system 119% cpu 8:37.42 total
+```
+
+- OS: Linux 5.15.2-arch1-1
+- Parallel version: 20170922
+
+```$ lscpu | egrep 'Model name|Socket|Thread|NUMA|CPU\(s\)'
+CPU(s):                          24
+On-line CPU(s) list:             0-23
+Model name:                      AMD Ryzen 9 3900X 12-Core Processor
+Thread(s) per core:              2
+Socket(s):                       1
+NUMA node(s):                    1
+NUMA node0 CPU(s):               0-23
+```
+
+Run normal vs parallel
+```
+10^8
+./benford 100000000  6.55s user 0.28s system 105% cpu 6.460 total
+parallel ./benford ::: 100000000  6.68s user 0.34s system 105% cpu 6.650 total
+
+10^9
+./benford 1000000000  61.77s user 2.32s system 105% cpu 1:00.67 total
+parallel ./benford ::: 1000000000  62.11s user 2.28s system 105% cpu 1:00.96 total
 ```
