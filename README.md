@@ -27,8 +27,10 @@ Result: go...home Alex... :(
 ## Benchmarks
 
 ### System Information
-OS: Linux 5.15.4-arch1-1
-Parallel version: 20170922
+
+- OS: Linux 5.15.4-arch1-1
+- Parallel version: 20170922
+
 ```$ lscpu | egrep 'Model name|Socket|Thread|NUMA|CPU\(s\)'
 CPU(s):                          8
 On-line CPU(s) list:             0-7
