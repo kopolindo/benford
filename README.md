@@ -23,3 +23,28 @@ True, false, blah, not important, hack wanna hack, just "fun'n'profit" ;)
 Choice: go  
 Why: concurrency  
 Result: go...home Alex... :(
+
+## Benchmarks
+
+### System Information
+OS: Linux 5.15.4-arch1-1
+Parallel version: 20170922
+```$ lscpu | egrep 'Model name|Socket|Thread|NUMA|CPU\(s\)'
+CPU(s):                          8
+On-line CPU(s) list:             0-7
+Model name:                      AMD Ryzen 5 PRO 3500U w/ Radeon Vega Mobile Gfx
+Thread(s) per core:              2
+Socket(s):                       1
+NUMA node(s):                    1
+NUMA node0 CPU(s):               0-7
+```
+Run normal vs parallel
+```
+10^8
+./benford 100000000  12.12s user 1.12s system 106% cpu 12.488 total
+parallel ./benford ::: 100000000  10.77s user 1.94s system 109% cpu 11.613 total
+
+10^9
+./benford 1000000000  393.67s user 221.88s system 117% cpu 8:43.28 total
+parallel ./benford ::: 1000000000  392.62s user 226.67s system 119% cpu 8:37.42 total
+```
