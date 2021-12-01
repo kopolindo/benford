@@ -1,17 +1,33 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"math"
 	"math/rand"
 	"os"
 	"sort"
-	"strconv"
 	"time"
 )
 
-var thProbs = [9]float64{0.301, 0.176, 0.125, 0.097, 0.079, 0.067, 0.058, 0.057, 0.046}
-var test = [9]float64{0.327, 0.149, 0.107, 0.079, 0.076, 0.082, 0.061, 0.055, 0.064}
+var (
+	thProbs          = [9]float64{0.301, 0.176, 0.125, 0.097, 0.079, 0.067, 0.058, 0.057, 0.046}
+	test             = [9]float64{0.327, 0.149, 0.107, 0.079, 0.076, 0.082, 0.061, 0.055, 0.064}
+	sample           int
+	iterations       int
+	Version          string
+	BuildCommitShort string
+	version          bool
+	keys             []int
+)
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+	flag.IntVar(&iterations, "iterations", 1, "Number of iterations")
+	flag.IntVar(&sample, "sample", 1, "Size of the sample to be generated")
+	flag.BoolVar(&version, "version", false, "Print version")
+	flag.Parse()
+}
 
 func compliance(SSD float64) string {
 	result := "default"
@@ -70,20 +86,24 @@ func calcOccurrences(input []int) (out map[int]float64) {
 }
 
 func main() {
-	var keys []int
-	TOT, _ := strconv.Atoi(os.Args[1])
-	rand.Seed(time.Now().UnixNano())
-	fdCVSSScores := GenerateFirstDigitCVSSScores(TOT)
-	occurrences := calcOccurrences(fdCVSSScores)
-	for k := range occurrences {
-		keys = append(keys, k)
+	if version {
+		fmt.Println("Version:\t", Version)
+		fmt.Println("Build:\t\t", BuildCommitShort)
+		os.Exit(0)
 	}
-	sort.Ints(keys)
-	/*
-		for _, k := range keys {
-			fmt.Println(k, occurrences[k])
-		}*/
-	ssd := SSD(occurrences, TOT)
-	fmt.Println(ssd)
-	//fmt.Println(compliance(ssd))
+	for it := 0; it < iterations; it++ {
+		fdCVSSScores := GenerateFirstDigitCVSSScores(sample)
+		occurrences := calcOccurrences(fdCVSSScores)
+		for k := range occurrences {
+			keys = append(keys, k)
+		}
+		sort.Ints(keys)
+		/*
+			for _, k := range keys {
+				fmt.Println(k, occurrences[k])
+			}*/
+		ssd := SSD(occurrences, sample)
+		fmt.Println(ssd)
+		//fmt.Println(compliance(ssd))
+	}
 }

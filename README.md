@@ -17,7 +17,7 @@ If they are then we can judge security assessment outcomes (big big big numbers 
 4. Iterating this process on and on, to collect more and more data
 
 ## Expectations
-True, false, blah, not important, hack wanna hack, just "fun'n'profit" ;)
+True, false, blah, not important, hackers gonna hack, just "fun'n'profit" ;)
 
 ## Program
 Choice: go  
