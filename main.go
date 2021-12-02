@@ -20,6 +20,7 @@ var (
 	version          bool
 	verbose          bool
 	mainWG           sync.WaitGroup
+	ssdResults       []float64
 )
 
 func init() {
@@ -32,38 +33,51 @@ func init() {
 }
 
 func main() {
+	// Print version
 	if version {
 		fmt.Println("Version:\t", Version)
 		fmt.Println("Build:\t\t", BuildCommitShort)
 		os.Exit(0)
 	}
+	// If no flag is provided
 	if sample < 1 || iterations < 1 {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
+	// If sample is not is not provided
 	if sample < 1 {
 		fmt.Println("Sample must be at least 1.\nThe greater the better.\nFrom great samples come great statistics.\nUse -sample flag to provide sample.")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
+	// Create working group (one for every iteration)
 	mainWG.Add(iterations)
+	// Initialize SSD result array
 	for it := 0; it < iterations; it++ {
+		// Create channel to make goroutine and main routine communicate
 		SSDs := make(chan float64, 1)
-		//fmt.Println(mainWG)
 		go func(sample int, workg *sync.WaitGroup, result chan float64) {
 			defer workg.Done()
 			var keys []int
+			// Generate CVSS scores, normalize them (Exp) and take the first digit
 			fdCVSSScores := GenerateFirstDigitCVSSScores(sample)
+			// count occurrences of first left digits
 			occurrences := CalcOccurrences(fdCVSSScores)
+			// Here the order part
 			for k := range occurrences {
 				keys = append(keys, k)
 			}
 			sort.Ints(keys)
+			// Communicate with main routine
 			result <- SSD(occurrences, sample)
 		}(sample, &mainWG, SSDs)
+		// Fetch value from gorouting
 		ssd := <-SSDs
+		// Close channel
 		close(SSDs)
+		// Print the output
 		fmt.Println(ssd)
+		// If verbose print also the compliancy
 		if verbose {
 			fmt.Println(Compliance(ssd))
 		}
