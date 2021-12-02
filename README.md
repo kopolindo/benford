@@ -1,4 +1,23 @@
 # Benford && CVSS
+## Index
+- [Who](https://github.com/kopolindo/benford#who)
+- [Thanks to](https://github.com/kopolindo/benford#thanks-to)
+- [Reason](https://github.com/kopolindo/benford#reason)
+- [How](https://github.com/kopolindo/benford#how)
+- [Expectations](https://github.com/kopolindo/benford#expectations)
+- [Program](https://github.com/kopolindo/benford#program)
+- [HowTo](https://github.com/kopolindo/benford#howto)
+	- [Build](https://github.com/kopolindo/benford#build)
+	- [Install](https://github.com/kopolindo/benford#install)
+	- [Uninstall](https://github.com/kopolindo/benford#uninstall)
+	- [Use](https://github.com/kopolindo/benford#use)
+		- [Flag explanation](https://github.com/kopolindo/benford#flag-explanation)
+	- [Examples](https://github.com/kopolindo/benford#examples)
+		- [Example 1](https://github.com/kopolindo/benford#example-1)
+		- [Example_2](https://github.com/kopolindo/benford#example-2)
+- [Benchmarks](https://github.com/kopolindo/benford#benchmarks)
+
+
 ## Who
 [@kopolindo](https://github.com/kopolindo)  
 [@giorgiofox](https://github.com/giorgiofox) (original idea)
@@ -29,11 +48,11 @@ Result: go...home Alex... :(
 `$ make build`  
 It creates a `benford` executable in the same src folder
 
-### Installing
+### Install
 `$ make install`  
 It creates a `benford` executable in `$GOPATH/bin/`
 
-### Uninstalling
+### Uninstall
 `$ make uninstall`
 
 ### Use
@@ -99,8 +118,6 @@ not even close
 ```
 
 ## Benchmarks
-
-### System Information
 
 - OS: Linux 5.15.4-arch1-1
 - Parallel version: 20170922
