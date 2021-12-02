@@ -24,6 +24,80 @@ Choice: go
 Why: concurrency  
 Result: go...home Alex... :(  
 
+## HowTo
+### Build
+`$ make build`  
+It creates a `benford` executable in the same src folder
+
+### Installing
+`$ make install`  
+It creates a `benford` executable in `$GOPATH/bin/`
+
+### Uninstalling
+`$ make uninstall`
+
+### Use
+```
+$ ./benford -h
+  -iterations int
+        Number of iterations (default 1)
+  -sample int
+        Size of the sample to be generated
+  -verbose
+        Verbose, print compliancy
+  -version
+        Print version
+```
+
+#### Flag explanation
+`-iterations` is the (int) number of actual runs for the program (default: 1)
+`-sample` is the (int) number of the vulnerabilities among which distribute the scores
+`-verbose` print also additional messages (e.g., compliancy of computed SSD)
+`-version` print the version and build of the program
+
+### Examples
+#### Example 1
+Run 10 times with sample of 1000 scores
+```
+$ ./benford -sample 1000 -iterations 10
+75.88
+62.3
+82.08
+62.26
+43.06
+64.76
+73.14
+91.7
+69.56
+68.82
+```
+
+#### Example 2
+Run 10 times with sample of 1000 scores, verbose mode
+```
+$ ./benford -sample 1000 -iterations 10 -verbose
+40.66
+not good
+62.04
+not good
+74.96
+not good
+57.08
+not good
+54.8
+not good
+84.46
+not good
+97.64
+not good
+61.48
+not good
+77.08
+not good
+100.54
+not even close
+```
+
 ## Benchmarks
 
 ### System Information
