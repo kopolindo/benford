@@ -50,10 +50,10 @@ $ ./benford -h
 ```
 
 #### Flag explanation
-`-iterations` is the (int) number of actual runs for the program (default: 1)
-`-sample` is the (int) number of the vulnerabilities among which distribute the scores
-`-verbose` print also additional messages (e.g., compliancy of computed SSD)
-`-version` print the version and build of the program
+`-iterations` is the (int) number of actual runs for the program (default: 1)  
+`-sample` is the (int) number of the vulnerabilities among which distribute the scores  
+`-verbose` print also additional messages (e.g., compliancy of computed SSD)  
+`-version` print the version and build of the program  
 
 ### Examples
 #### Example 1
