@@ -37,8 +37,13 @@ func main() {
 		fmt.Println("Build:\t\t", BuildCommitShort)
 		os.Exit(0)
 	}
+	if sample < 1 || iterations < 1 {
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
 	if sample < 1 {
 		fmt.Println("Sample must be at least 1.\nThe greater the better.\nFrom great samples come great statistics.\nUse -sample flag to provide sample.")
+		flag.PrintDefaults()
 		os.Exit(1)
 	}
 	mainWG.Add(iterations)
