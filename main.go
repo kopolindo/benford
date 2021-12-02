@@ -72,14 +72,19 @@ func main() {
 			result <- SSD(occurrences, sample)
 		}(sample, &mainWG, SSDs)
 		// Fetch value from gorouting
-		ssd := <-SSDs
+		//ssd := <-SSDs
+		ssdResults = append(ssdResults, <-SSDs)
 		// Close channel
 		close(SSDs)
-		// Print the output
-		fmt.Println(ssd)
-		// If verbose print also the compliancy
-		if verbose {
-			fmt.Println(Compliance(ssd))
-		}
 	}
+	fmt.Println("Min:", Min(ssdResults))
+	fmt.Println("Max:", Max(ssdResults))
+	fmt.Println("Average:", Average(ssdResults))
+
+	// Print the output
+	//fmt.Println(ssd)
+	// If verbose print also the compliancy
+	//if verbose {
+	//	fmt.Println(Compliance(ssd))
+	//}
 }

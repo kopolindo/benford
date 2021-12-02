@@ -35,6 +35,34 @@ func contains(s []int, e int) bool {
 	return false
 }
 
+func Average(s []float64) (average float64) {
+	for _, i := range s {
+		average += i
+	}
+	average = math.Round((average/float64(len(s)))*100) / 100
+	return
+}
+
+func Max(s []float64) (max float64) {
+	max = s[0]
+	for _, val := range s {
+		if val >= max {
+			max = val
+		}
+	}
+	return
+}
+
+func Min(s []float64) (min float64) {
+	min = s[0]
+	for _, val := range s {
+		if val <= min {
+			min = val
+		}
+	}
+	return
+}
+
 // 1. take the decimal part array and sort it largest -> smallest
 // 2. calc difference between total and sum (i.e., N)
 // 3. take the first N decimal numbers and add up the respective int part
