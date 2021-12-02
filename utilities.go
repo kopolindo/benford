@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"math"
+	"os"
 	"sort"
 )
 
@@ -68,4 +70,60 @@ func GenerateParts(perc []float64, tot int) []int {
 		}
 	}
 	return intList
+}
+
+func SSD(input map[int]float64, TOT int) float64 {
+	ssd := 0.0
+	for i := 0; i < len(input); i++ {
+		//fmt.Printf("\"%d\";\"%v\";\"%v\"\n", i+1, input[i+1], thProbs[i])
+		ssd += math.Pow((thProbs[i] - input[i+1]), 2)
+	}
+	return math.Round((10000*ssd)*100) / 100
+}
+
+func Compliance(SSD float64) string {
+	result := "default"
+	if SSD < 0 {
+		fmt.Println("ssd cannot be negative :/")
+		os.Exit(1)
+	}
+	switch ssd := SSD; {
+	case ssd < 2.0:
+		result = "perfect"
+	case ssd < 25.0:
+		result = "quite good"
+	case ssd < 100.0:
+		result = "not good"
+	case ssd >= 100.0:
+		result = "not even close"
+	default:
+		result = "default"
+	}
+	return result
+}
+
+func CalcOccurrences(input []int) (out map[int]float64) {
+	tot := 0
+	tmp := map[int]int{
+		1: 0,
+		2: 0,
+		3: 0,
+		4: 0,
+		5: 0,
+		6: 0,
+		7: 0,
+		8: 0,
+		9: 0,
+	}
+	out = make(map[int]float64)
+	for _, i := range input {
+		tmp[i]++
+	}
+	for _, v := range tmp {
+		tot += v
+	}
+	for k, v := range tmp {
+		out[k] = float64(v) / float64(tot)
+	}
+	return
 }
