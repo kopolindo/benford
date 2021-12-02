@@ -14,7 +14,7 @@
 		- [Flag explanation](https://github.com/kopolindo/benford#flag-explanation)
 	- [Examples](https://github.com/kopolindo/benford#examples)
 		- [Example 1](https://github.com/kopolindo/benford#example-1)
-		- [Example_2](https://github.com/kopolindo/benford#example-2)
+		- [Example 2](https://github.com/kopolindo/benford#example-2)
 - [Benchmarks](https://github.com/kopolindo/benford#benchmarks)
 
 
