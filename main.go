@@ -19,6 +19,7 @@ var (
 	BuildCommitShort string
 	version          bool
 	verbose          bool
+	humanReadable    bool
 	mainWG           sync.WaitGroup
 	ssdResults       []float64
 )
@@ -29,6 +30,7 @@ func init() {
 	flag.IntVar(&sample, "sample", 0, "Size of the sample to be generated")
 	flag.BoolVar(&version, "version", false, "Print version")
 	flag.BoolVar(&verbose, "verbose", false, "Verbose, print compliancy")
+	flag.BoolVar(&humanReadable, "human", false, "Human readable vs CSV readable")
 	flag.Parse()
 }
 
@@ -77,10 +79,19 @@ func main() {
 		// Close channel
 		close(SSDs)
 	}
-	fmt.Println("Min:", Min(ssdResults))
-	fmt.Println("Max:", Max(ssdResults))
-	fmt.Println("Average:", Average(ssdResults))
-
+	if humanReadable {
+		fmt.Println("Min:", Min(ssdResults))
+		fmt.Println("Max:", Max(ssdResults))
+		fmt.Println("Average:", Average(ssdResults))
+	} else {
+		fmt.Printf(
+			"%d;%.2f;%.2f;%.2f\n",
+			sample,
+			Min(ssdResults),
+			Max(ssdResults),
+			Average(ssdResults),
+		)
+	}
 	// Print the output
 	//fmt.Println(ssd)
 	// If verbose print also the compliancy
