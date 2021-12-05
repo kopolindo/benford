@@ -8,6 +8,8 @@ import (
 	"sort"
 	"sync"
 	"time"
+
+	charts "benford/charts"
 )
 
 var (
@@ -22,6 +24,7 @@ var (
 	humanReadable    bool
 	mainWG           sync.WaitGroup
 	ssdResults       []float64
+	scatterChart     charts.ScatterData
 )
 
 func init() {
@@ -79,17 +82,20 @@ func main() {
 		// Close channel
 		close(SSDs)
 	}
+	scatterChart.Create(ssdResults)
 	if humanReadable {
 		fmt.Println("Min:", Min(ssdResults))
 		fmt.Println("Max:", Max(ssdResults))
 		fmt.Println("Average:", Average(ssdResults))
+		fmt.Println("DevStd", DevStd(ssdResults))
 	} else {
 		fmt.Printf(
-			"%d;%.2f;%.2f;%.2f\n",
+			"%d;%.2f;%.2f;%.2f;%.2f\n",
 			sample,
 			Min(ssdResults),
 			Max(ssdResults),
 			Average(ssdResults),
+			DevStd(ssdResults),
 		)
 	}
 	// Print the output

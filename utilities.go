@@ -35,6 +35,20 @@ func contains(s []int, e int) bool {
 	return false
 }
 
+//
+//func outputCsv(){
+//
+//}
+
+func DevStd(s []float64) (devstd float64) {
+	xm := Average(s)
+	for _, xi := range s {
+		devstd += math.Pow((xm - xi), float64(2))
+	}
+	devstd = math.Round(math.Sqrt((devstd/float64(len(s))))*100) / 100
+	return
+}
+
 func Average(s []float64) (average float64) {
 	for _, i := range s {
 		average += i
