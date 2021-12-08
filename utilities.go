@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"math"
 	"os"
@@ -168,4 +169,14 @@ func CalcOccurrences(input []int) (out map[int]float64) {
 		out[k] = float64(v) / float64(tot)
 	}
 	return
+}
+
+func IsFlagPassed(name string) bool {
+	found := false
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == name {
+			found = true
+		}
+	})
+	return found
 }

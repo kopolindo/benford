@@ -1,8 +1,10 @@
 package charts
 
 import (
+	"fmt"
 	"io"
 	"os"
+	"path"
 
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/components"
@@ -33,7 +35,6 @@ func scatterGenerate(data []float64) *charts.Scatter {
 		charts.WithTitleOpts(opts.Title{Title: "Scatter plot for generated SSDs"}),
 	)
 
-	scatter.YAxis.Scale = true
 	scatter.SetXAxis(categories).
 		AddSeries("Series1", generateScatterItems(data))
 		//AddSeries("Category B", generateScatterItems()).
@@ -43,10 +44,11 @@ func scatterGenerate(data []float64) *charts.Scatter {
 
 type ScatterData struct{}
 
-func (ScatterData) Create(data []float64) {
+func (ScatterData) Create(name string, data []float64) {
+	fname := path.Join("output", fmt.Sprintf("%s_scatter.html", name))
 	page := components.NewPage()
 	page.AddCharts(scatterGenerate(data))
-	f, err := os.Create("output/scatter.html")
+	f, err := os.Create(fname)
 	if err != nil {
 		panic(err)
 	}
