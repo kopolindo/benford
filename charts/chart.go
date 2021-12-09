@@ -27,6 +27,7 @@ func generateScatterItems(data []float64) []opts.ScatterData {
 }
 func scatterGenerate(data []float64) *charts.Scatter {
 	N := len(data)
+	categories = []int{}
 	for i := 1; i <= N; i++ {
 		categories = append(categories, i)
 	}
@@ -37,8 +38,6 @@ func scatterGenerate(data []float64) *charts.Scatter {
 
 	scatter.SetXAxis(categories).
 		AddSeries("Series1", generateScatterItems(data))
-		//AddSeries("Category B", generateScatterItems()).
-
 	return scatter
 }
 

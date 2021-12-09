@@ -33,7 +33,6 @@ var (
 	chart            bool
 	iterationsWG     sync.WaitGroup
 	sampleWG         sync.WaitGroup
-	ssdResults       []float64
 	m                sync.RWMutex
 )
 
@@ -96,11 +95,18 @@ func init() {
 func worker(sample int, iterations int, resChan chan Result) {
 	var res Result
 	// Initialize SSD result array
-	ssdResults = []float64{}
+	var ssdResults []float64
+	SSDsResultsChan := make(chan float64, iterations)
+	go func(result chan float64) {
+		// Fetch value from gorouting
+		ssdResults = append(ssdResults, <-result)
+	}(SSDsResultsChan)
+	var wg sync.WaitGroup
+	wg.Add(iterations)
 	for it := 0; it < iterations; it++ {
 		// Create channel to make goroutine and main routine communicate
-		SSDs := make(chan float64, 1)
 		go func(sample int, result chan float64) {
+			defer wg.Done()
 			var keys []int
 			// Generate CVSS scores, normalize them (Exp) and take the first digit
 			fdCVSSScores := GenerateFirstDigitCVSSScores(sample)
@@ -113,13 +119,11 @@ func worker(sample int, iterations int, resChan chan Result) {
 			sort.Ints(keys)
 			// Communicate with main routine
 			result <- SSD(occurrences, sample)
-		}(sample, SSDs)
-		// Fetch value from gorouting
-		//ssd := <-SSDs
-		ssdResults = append(ssdResults, <-SSDs)
-		// Close channel
-		close(SSDs)
+		}(sample, SSDsResultsChan)
 	}
+	// Close channel
+	wg.Wait()
+	close(SSDsResultsChan)
 	m.Lock()
 	res.SSDs = ssdResults
 	res.Sample = sample
