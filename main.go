@@ -92,14 +92,17 @@ func init() {
 }
 
 // Worker function (for sample)
-func worker(sample int, iterations int, resChan chan Result) {
+func worker(sample int, iterations int, mainWg *sync.WaitGroup, resChan chan Result) {
+	defer mainWg.Done()
 	var res Result
 	// Initialize SSD result array
 	var ssdResults []float64
-	SSDsResultsChan := make(chan float64, iterations)
+	SSDsResultsChan := make(chan float64, 1)
 	go func(result chan float64) {
 		// Fetch value from gorouting
-		ssdResults = append(ssdResults, <-result)
+		for r := range result {
+			ssdResults = append(ssdResults, r)
+		}
 	}(SSDsResultsChan)
 	var wg sync.WaitGroup
 	wg.Add(iterations)
@@ -139,28 +142,35 @@ func main() {
 	sampleSetSize := maxSample - minSample + 1
 	fmt.Printf("minSample: %d\nmaxSample: %d\nsampleSetSize: %d\n",
 		minSample, maxSample, sampleSetSize)
+	resultChannel := make(chan Result, 1)
+	var workerResult Result
+	go func(ch chan Result) {
+		for i := range ch {
+			workerResult = i
+			if humanReadable {
+				fmt.Println("Min:", workerResult.Min)
+				fmt.Println("Max:", workerResult.Max)
+				fmt.Println("Average:", workerResult.Average)
+				fmt.Println("DevStd", workerResult.DevStd)
+			} else {
+				fmt.Printf("%d;%.2f;%.2f;%.2f;%.2f\n",
+					workerResult.Sample,
+					workerResult.Min,
+					workerResult.Max,
+					workerResult.Average,
+					workerResult.DevStd)
+			}
+		}
+	}(resultChannel)
+	var mainWg sync.WaitGroup
+	mainWg.Add(sampleSetSize)
 	for sample = minSample; sample <= maxSample; sample++ {
-		resultChannel := make(chan Result, 1)
-		go worker(sample, iterations, resultChannel)
-		// insert mutex
-		workerResult := <-resultChannel
-		close(resultChannel)
+		go worker(sample, iterations, &mainWg, resultChannel)
 		if chart {
 			var scatterChart charts.ScatterData
 			scatterChart.Create(strconv.Itoa(sample), workerResult.SSDs)
 		}
-		if humanReadable {
-			fmt.Println("Min:", workerResult.Min)
-			fmt.Println("Max:", workerResult.Max)
-			fmt.Println("Average:", workerResult.Average)
-			fmt.Println("DevStd", workerResult.DevStd)
-		} else {
-			fmt.Printf("%d;%.2f;%.2f;%.2f;%.2f\n",
-				workerResult.Sample,
-				workerResult.Min,
-				workerResult.Max,
-				workerResult.Average,
-				workerResult.DevStd)
-		}
 	}
+	mainWg.Wait()
+	close(resultChannel)
 }
