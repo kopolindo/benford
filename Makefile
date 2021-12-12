@@ -11,6 +11,9 @@ LDFLAGS=-ldflags "-X=main.Version=$(VERSION) -X=main.BuildCommitShort=$(BUILD)"
 build:
 	@go build $(LDFLAGS) -o $(TARGET)
 
+race:
+	@go build -race $(LDFLAGS) -o $(TARGET)
+
 clean:
 	@rm -f $(TARGET)
 

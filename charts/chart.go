@@ -1,10 +1,12 @@
 package charts
 
 import (
+	"benford/structure"
 	"fmt"
 	"io"
 	"os"
 	"path"
+	"strconv"
 
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/components"
@@ -43,10 +45,10 @@ func scatterGenerate(data []float64) *charts.Scatter {
 
 type ScatterData struct{}
 
-func (ScatterData) Create(name string, data []float64) {
-	fname := path.Join("output", fmt.Sprintf("%s_scatter.html", name))
+func (ScatterData) Create(r structure.Result) {
+	fname := path.Join("output", fmt.Sprintf("%s_scatter.html", strconv.Itoa(r.Sample)))
 	page := components.NewPage()
-	page.AddCharts(scatterGenerate(data))
+	page.AddCharts(scatterGenerate(r.SSDs))
 	f, err := os.Create(fname)
 	if err != nil {
 		panic(err)

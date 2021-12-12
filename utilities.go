@@ -6,11 +6,10 @@ import (
 	"math"
 	"os"
 	"sort"
+	"sync"
 )
 
-var (
-	max []int
-)
+var localMutex sync.Mutex
 
 type Pair struct {
 	Key   int
@@ -51,6 +50,8 @@ func DevStd(s []float64) (devstd float64) {
 }
 
 func Average(s []float64) (average float64) {
+	localMutex.Lock()
+	defer localMutex.Unlock()
 	for _, i := range s {
 		average += i
 	}
@@ -85,6 +86,7 @@ func Min(s []float64) (min float64) {
 
 func GenerateParts(perc []float64, tot int) []int {
 	var p []Pair
+	var max []int
 	var intList []int
 	sum := 0
 	i := 0

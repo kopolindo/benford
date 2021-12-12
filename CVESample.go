@@ -16,8 +16,7 @@ type riskDistribution struct {
 type IntSlice []int
 
 var (
-	CVEPercentageDistribution []float64
-	realCVSSDistribution      = [4]riskDistribution{
+	realCVSSDistribution = [4]riskDistribution{
 		{"C", 9.0, 10.0, 0.115},
 		{"H", 7.0, 8.9, 0.207},
 		{"M", 4.0, 6.9, 0.574},
@@ -48,6 +47,7 @@ func RiskCalc(risk riskDistribution, quantities int, workg *sync.WaitGroup, resu
 
 func GenerateFirstDigitCVSSScores(tot int) []int {
 	var FirstDigitCVSSScores []int
+	var CVEPercentageDistribution []float64
 	for _, r := range realCVSSDistribution {
 		CVEPercentageDistribution = append(CVEPercentageDistribution, r.percentage)
 	}
@@ -59,11 +59,6 @@ func GenerateFirstDigitCVSSScores(tot int) []int {
 		go RiskCalc(risk, quantities[i], &wg, tmp)
 		res := <-tmp
 		close(tmp)
-		//for k := 0; k < quantities[i]; k++ {
-		//	score := math.Round((risk.minScore+rand.Float64()*(risk.maxScore-risk.minScore))*10) / 10
-		//	//fmt.Println(score)
-		//	fld := firstLeftDigit(math.Exp(score))
-		//}
 		FirstDigitCVSSScores = append(FirstDigitCVSSScores, res...)
 	}
 	wg.Wait()
