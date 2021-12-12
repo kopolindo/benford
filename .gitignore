@@ -2,4 +2,6 @@ benford
 .gitignore
 *.swp
 *.png
+*.csv
+*.xlsx
 output/

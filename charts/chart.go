@@ -45,10 +45,14 @@ func scatterGenerate(data []float64) *charts.Scatter {
 
 type ScatterData struct{}
 
-func (ScatterData) Create(r structure.Result) {
-	fname := path.Join("output", fmt.Sprintf("%s_scatter.html", strconv.Itoa(r.Sample)))
+// CreateScatter creates a scatter plot
+// Input: structure.Result
+func (ScatterData) CreateScatter(r structure.Result) {
+	name := strconv.Itoa(r.Sample)
+	data := r.SSDs
+	fname := path.Join("output", fmt.Sprintf("%s_scatter.html", name))
 	page := components.NewPage()
-	page.AddCharts(scatterGenerate(r.SSDs))
+	page.AddCharts(scatterGenerate(data))
 	f, err := os.Create(fname)
 	if err != nil {
 		panic(err)

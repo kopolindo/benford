@@ -151,7 +151,7 @@ func main() {
 		if chart {
 			m.Lock()
 			var scatterChart charts.ScatterData
-			scatterChart.Create(workerResult)
+			scatterChart.CreateScatter(workerResult)
 			m.Unlock()
 		}
 		if humanReadable {
