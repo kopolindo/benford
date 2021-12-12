@@ -58,8 +58,17 @@ It creates a `benford` executable in `$GOPATH/bin/`
 ### Use
 ```
 $ ./benford -h
+Usage of ./benford:
+  -chart
+        Create a scattered chart in output folder
+  -human
+        Human readable vs CSV readable
   -iterations int
         Number of iterations (default 1)
+  -max-sample int
+        Finish with this sample size (default -1)
+  -min-sample int
+        Start from this sample size (default -1)
   -sample int
         Size of the sample to be generated
   -verbose
@@ -71,8 +80,12 @@ $ ./benford -h
 #### Flag explanation
 `-iterations` is the (int) number of actual runs for the program (default: 1)  
 `-sample` is the (int) number of the vulnerabilities among which distribute the scores  
+`-min-sample` minimum of the sample set if use case is to range over multiple sample sets. It excludes `-sample`  
+`-max-sample` maximum of the sample set if use case is to range over multiple sample sets. It excludes `-sample`  
 `-verbose` print also additional messages (e.g., compliancy of computed SSD)  
 `-version` print the version and build of the program  
+`-chart` generates chart(s) in output folder  
+`-human` print in human readable format  
 
 ### Examples
 #### Example 1

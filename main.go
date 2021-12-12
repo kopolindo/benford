@@ -139,14 +139,21 @@ func worker(sample int, iterations int, mainWg *sync.WaitGroup, resChan chan Res
 }
 
 func main() {
+	var m sync.Mutex
 	sampleSetSize := maxSample - minSample + 1
-	fmt.Printf("minSample: %d\nmaxSample: %d\nsampleSetSize: %d\n",
-		minSample, maxSample, sampleSetSize)
+	if verbose {
+		fmt.Printf("minSample: %d\nmaxSample: %d\nsampleSetSize: %d\n",
+			minSample, maxSample, sampleSetSize)
+	}
 	resultChannel := make(chan Result, 1)
-	var workerResult Result
 	go func(ch chan Result) {
-		for i := range ch {
-			workerResult = i
+		var scatterChart charts.ScatterData
+		for workerResult := range ch {
+			if chart {
+				m.Lock()
+				scatterChart.Create(strconv.Itoa(sample), workerResult.SSDs)
+				m.Unlock()
+			}
 			if humanReadable {
 				fmt.Println("Min:", workerResult.Min)
 				fmt.Println("Max:", workerResult.Max)
@@ -166,10 +173,6 @@ func main() {
 	mainWg.Add(sampleSetSize)
 	for sample = minSample; sample <= maxSample; sample++ {
 		go worker(sample, iterations, &mainWg, resultChannel)
-		if chart {
-			var scatterChart charts.ScatterData
-			scatterChart.Create(strconv.Itoa(sample), workerResult.SSDs)
-		}
 	}
 	mainWg.Wait()
 	close(resultChannel)
