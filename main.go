@@ -6,11 +6,14 @@ import (
 	"math/rand"
 	"os"
 	"sort"
+	"strconv"
 	"sync"
 	"time"
 
 	charts "benford/charts"
+	"benford/sampleGeneration"
 	"benford/structure"
+	"benford/utilities"
 )
 
 const (
@@ -34,6 +37,12 @@ var (
 	iterationsWG     sync.WaitGroup
 	sampleWG         sync.WaitGroup
 	mainMutex        sync.Mutex
+	m                sync.Mutex
+	mainWg           sync.WaitGroup
+	linePlot         structure.LinePlot
+	minSerie         structure.LineSerie
+	averageSerie     structure.LineSerie
+	maxSerie         structure.LineSerie
 )
 
 func checkConditions() {
@@ -44,15 +53,15 @@ func checkConditions() {
 		os.Exit(0)
 	}
 	// If no sample flag is provided
-	if !IsFlagPassed("sample") &&
-		!IsFlagPassed("min-sample") &&
-		!IsFlagPassed("max-sample") {
+	if !utilities.IsFlagPassed("sample") &&
+		!utilities.IsFlagPassed("min-sample") &&
+		!utilities.IsFlagPassed("max-sample") {
 		fmt.Println("You need to specify at least one sample ;)\n")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	if IsFlagPassed("sample") &&
-		(IsFlagPassed("min-sample") || IsFlagPassed("max-sample")) {
+	if utilities.IsFlagPassed("sample") &&
+		(utilities.IsFlagPassed("min-sample") || utilities.IsFlagPassed("max-sample")) {
 		fmt.Println("The following flags are incompatible one with each other:")
 		fmt.Println("\tsample with min-sample and max-sample\n")
 		fmt.Println("You use sample for a one-shot execution")
@@ -62,7 +71,7 @@ func checkConditions() {
 		os.Exit(1)
 	}
 	// If minSample and maxSample are set, then sample is not needed
-	if IsFlagPassed("sample") {
+	if utilities.IsFlagPassed("sample") {
 		minSample = sample
 		maxSample = sample
 	}
@@ -102,16 +111,16 @@ func worker(sample int, iterations int, mainWg *sync.WaitGroup, resChan chan str
 			defer localWg.Done()
 			var keys []int
 			// Generate CVSS scores, normalize them (Exp) and take the first digit
-			fdCVSSScores := GenerateFirstDigitCVSSScores(sample)
-			// count occurrences of first left digits
-			occurrences := CalcOccurrences(fdCVSSScores)
+			fdCVSSScores := sampleGeneration.GenerateFirstDigitCVSSScores(sample)
+			// count ces of first left digits
+			occurrences := utilities.CalcOccurrences(fdCVSSScores)
 			// Here the order part
 			for k := range occurrences {
 				keys = append(keys, k)
 			}
 			sort.Ints(keys)
 			// Communicate with main routine
-			result <- SSD(occurrences, sample)
+			result <- utilities.SSD(occurrences, sample)
 		}(sample, &wg, SSDsResultsChan)
 	}
 	// Fetch value from gorouting
@@ -121,10 +130,10 @@ func worker(sample int, iterations int, mainWg *sync.WaitGroup, resChan chan str
 	res.Lock()
 	res.SSDs = ssdResults
 	res.Sample = sample
-	res.Average = Average(ssdResults)
-	res.Max = Max(ssdResults)
-	res.Min = Min(ssdResults)
-	res.DevStd = DevStd(ssdResults)
+	res.Average = utilities.Average(ssdResults)
+	res.Max = utilities.Max(ssdResults)
+	res.Min = utilities.Min(ssdResults)
+	res.DevStd = utilities.DevStd(ssdResults)
 	res.Unlock()
 	resChan <- res
 	mainMutex.Unlock()
@@ -132,8 +141,6 @@ func worker(sample int, iterations int, mainWg *sync.WaitGroup, resChan chan str
 
 func main() {
 	resultChannel := make(chan structure.Result, 1)
-	var m sync.Mutex
-	var mainWg sync.WaitGroup
 	sampleSetSize := maxSample - minSample + 1
 	mainWg.Add(sampleSetSize)
 	if verbose {
@@ -147,25 +154,48 @@ func main() {
 	for sample = minSample; sample <= maxSample; sample++ {
 		go worker(sample, iterations, &mainWg, resultChannel)
 	}
+	// ----- OUTPUT ----- //
 	for workerResult := range resultChannel {
+		sample := workerResult.Sample
+		min := workerResult.Min
+		max := workerResult.Max
+		average := workerResult.Average
+		devstd := workerResult.DevStd
 		if chart {
 			m.Lock()
 			var scatterChart charts.ScatterData
 			scatterChart.CreateScatter(workerResult)
+			// Create LinePlot
+			linePlot.PlotName = "SSDs result distribution vs samples"
+			linePlot.Categories = append(linePlot.Categories, strconv.Itoa(sample))
+			//  Create minSerie
+			minSerie.Name = "MIN"
+			minSerie.Values = append(minSerie.Values, min)
+			linePlot.LineSeries = append(linePlot.LineSeries, minSerie)
+			//  Create averageSerie
+			averageSerie.Name = "AVERAGE"
+			averageSerie.Values = append(averageSerie.Values, average)
+			linePlot.LineSeries = append(linePlot.LineSeries, averageSerie)
+			//  Create maxSerie
+			maxSerie.Name = "MAX"
+			maxSerie.Values = append(maxSerie.Values, max)
+			linePlot.LineSeries = append(linePlot.LineSeries, maxSerie)
+			var lineChart charts.LineData
+			lineChart.CreateLine(linePlot)
 			m.Unlock()
 		}
 		if humanReadable {
-			fmt.Println("Min:", workerResult.Min)
-			fmt.Println("Max:", workerResult.Max)
-			fmt.Println("Average:", workerResult.Average)
-			fmt.Println("DevStd", workerResult.DevStd)
+			fmt.Println("Min:", min)
+			fmt.Println("Max:", max)
+			fmt.Println("Average:", average)
+			fmt.Println("DevStd", devstd)
 		} else {
 			fmt.Printf("%d;%.2f;%.2f;%.2f;%.2f\n",
-				workerResult.Sample,
-				workerResult.Min,
-				workerResult.Max,
-				workerResult.Average,
-				workerResult.DevStd)
+				sample,
+				min,
+				max,
+				average,
+				devstd)
 		}
 	}
 }

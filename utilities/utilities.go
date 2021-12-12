@@ -1,15 +1,20 @@
-package main
+package utilities
 
 import (
+	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"math"
 	"os"
 	"sort"
 	"sync"
 )
 
-var localMutex sync.Mutex
+var (
+	localMutex sync.Mutex
+	thProbs    = [9]float64{0.301, 0.176, 0.125, 0.097, 0.079, 0.067, 0.058, 0.057, 0.046}
+)
 
 type Pair struct {
 	Key   int
@@ -120,7 +125,6 @@ func GenerateParts(perc []float64, tot int) []int {
 func SSD(input map[int]float64, TOT int) float64 {
 	ssd := 0.0
 	for i := 0; i < len(input); i++ {
-		//fmt.Printf("\"%d\";\"%v\";\"%v\"\n", i+1, input[i+1], thProbs[i])
 		ssd += math.Pow((thProbs[i] - input[i+1]), 2)
 	}
 	return math.Round((10000*ssd)*100) / 100
@@ -181,4 +185,14 @@ func IsFlagPassed(name string) bool {
 		}
 	})
 	return found
+}
+
+// Create directory if does not exist
+func MkdirINE(path string) {
+	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+		err := os.Mkdir(path, os.ModePerm)
+		if err != nil {
+			log.Println(err)
+		}
+	}
 }

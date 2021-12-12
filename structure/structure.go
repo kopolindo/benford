@@ -11,3 +11,14 @@ type Result struct {
 	DevStd  float64
 	SSDs    []float64
 }
+
+type LineSerie struct {
+	Name   string
+	Values []float64
+}
+
+type LinePlot struct {
+	PlotName   string
+	Categories []string
+	LineSeries []LineSerie
+}

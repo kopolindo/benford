@@ -1,6 +1,7 @@
-package main
+package sampleGeneration
 
 import (
+	"benford/utilities"
 	"math"
 	"math/rand"
 	"sync"
@@ -51,7 +52,7 @@ func GenerateFirstDigitCVSSScores(tot int) []int {
 	for _, r := range realCVSSDistribution {
 		CVEPercentageDistribution = append(CVEPercentageDistribution, r.percentage)
 	}
-	quantities := GenerateParts(CVEPercentageDistribution, tot)
+	quantities := utilities.GenerateParts(CVEPercentageDistribution, tot)
 	var wg sync.WaitGroup
 	wg.Add(len(realCVSSDistribution))
 	for i, risk := range realCVSSDistribution {
