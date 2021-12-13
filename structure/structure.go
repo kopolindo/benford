@@ -13,8 +13,10 @@ type Result struct {
 }
 
 type LineSerie struct {
-	Name   string
-	Values []float64
+	Name     string
+	Color    string
+	RGBColor [3]int
+	Values   []float64
 }
 
 type LinePlot struct {

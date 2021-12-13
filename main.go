@@ -170,16 +170,19 @@ func main() {
 			linePlot.Categories = append(linePlot.Categories, strconv.Itoa(sample))
 			//  Create minSerie
 			minSerie.Name = "MIN"
+			minSerie.Color = "blue"
 			minSerie.Values = append(minSerie.Values, min)
-			linePlot.LineSeries = append(linePlot.LineSeries, minSerie)
 			//  Create averageSerie
 			averageSerie.Name = "AVERAGE"
+			averageSerie.Color = "green"
 			averageSerie.Values = append(averageSerie.Values, average)
-			linePlot.LineSeries = append(linePlot.LineSeries, averageSerie)
 			//  Create maxSerie
 			maxSerie.Name = "MAX"
+			maxSerie.Color = "red"
 			maxSerie.Values = append(maxSerie.Values, max)
 			linePlot.LineSeries = append(linePlot.LineSeries, maxSerie)
+			linePlot.LineSeries = append(linePlot.LineSeries, averageSerie)
+			linePlot.LineSeries = append(linePlot.LineSeries, minSerie)
 			var lineChart charts.LineData
 			lineChart.CreateLine(linePlot)
 			m.Unlock()

@@ -68,7 +68,10 @@ func (ScatterData) CreateScatter(r structure.Result) {
 func generateLineItems(data []float64) []opts.LineData {
 	items := make([]opts.LineData, 0)
 	for i := 0; i < len(data); i++ {
-		items = append(items, opts.LineData{Value: data[i]})
+		items = append(items, opts.LineData{
+			Value:  data[i],
+			Symbol: "none",
+		})
 	}
 	return items
 }
@@ -80,18 +83,20 @@ func lineSmoothArea(plot structure.LinePlot) *charts.Line {
 	line := charts.NewLine()
 	line.SetGlobalOptions(
 		charts.WithTitleOpts(opts.Title{Title: plotName}),
+		charts.WithLegendOpts(opts.Legend{
+			Show:   true,
+			Bottom: "0%",
+		}),
 	)
 	for _, serie := range lineSeries {
-		// serie_n -> serie_n.Categories, serie_n.Values
+		color := serie.Color
 		line.SetXAxis(categories).AddSeries(
 			serie.Name,
 			generateLineItems(serie.Values)).
 			SetSeriesOptions(
-				charts.WithLabelOpts(opts.Label{
-					Show: true,
-				}),
-				charts.WithAreaStyleOpts(opts.AreaStyle{
-					Opacity: 0.2,
+				charts.WithLineStyleOpts(opts.LineStyle{
+					Width: 0,
+					Color: color,
 				}),
 				charts.WithLineChartOpts(opts.LineChart{
 					Smooth: true,
