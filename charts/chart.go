@@ -12,6 +12,7 @@ import (
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/components"
 	"github.com/go-echarts/go-echarts/v2/opts"
+	"github.com/go-echarts/go-echarts/v2/types"
 )
 
 var (
@@ -82,6 +83,7 @@ func lineSmoothArea(plot structure.LinePlot) *charts.Line {
 	lineSeries := plot.LineSeries
 	line := charts.NewLine()
 	line.SetGlobalOptions(
+		charts.WithInitializationOpts(opts.Initialization{Theme: types.ThemeWesteros}),
 		charts.WithTitleOpts(opts.Title{Title: plotName}),
 		charts.WithLegendOpts(opts.Legend{
 			Show:   true,
@@ -89,15 +91,10 @@ func lineSmoothArea(plot structure.LinePlot) *charts.Line {
 		}),
 	)
 	for _, serie := range lineSeries {
-		color := serie.Color
 		line.SetXAxis(categories).AddSeries(
 			serie.Name,
 			generateLineItems(serie.Values)).
 			SetSeriesOptions(
-				charts.WithLineStyleOpts(opts.LineStyle{
-					Width: 0,
-					Color: color,
-				}),
 				charts.WithLineChartOpts(opts.LineChart{
 					Smooth: true,
 				}),
