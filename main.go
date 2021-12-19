@@ -129,7 +129,7 @@ func init() {
 // Worker function (for sample)
 func worker(sample int, iter int, localWg *sync.WaitGroup, resChan chan structure.Result) {
 	defer localWg.Done()
-	//defer samplesBar.Add(1)
+	defer samplesBar.Add(1)
 	var res structure.Result
 	var ssdResults []float64
 	var wg sync.WaitGroup
@@ -145,7 +145,7 @@ func worker(sample int, iter int, localWg *sync.WaitGroup, resChan chan structur
 		// Create channel to make goroutine and main routine communicate
 		go func(samp int, innerWg *sync.WaitGroup, result chan float64) {
 			defer innerWg.Done()
-			defer iterBar.Add(1)
+			//defer iterBar.Add(1)
 			// Generate CVSS scores, normalize them (Exp) and take the first digit
 			fdCVSSScores := sampleGeneration.GenerateFirstDigitCVSSScores(samp)
 			// count ces of first left digits
@@ -171,18 +171,18 @@ func worker(sample int, iter int, localWg *sync.WaitGroup, resChan chan structur
 func main() {
 	resultChannel := make(chan structure.Result, 1)
 	sampleSetSize := maxSample - minSample + 1
-	totalIterations := sampleSetSize * iterations
-	iterBar = progressbar.NewOptions(
-		totalIterations,
-		progressbar.OptionEnableColorCodes(true),
-		progressbar.OptionSetDescription("[green]Total Iterations[reset]"),
-	)
-	/*samplesBar = progressbar.NewOptions(
+	//totalIterations := sampleSetSize * iterations
+	//iterBar = progressbar.NewOptions(
+	//	totalIterations,
+	//	progressbar.OptionEnableColorCodes(true),
+	//	progressbar.OptionSetDescription("[green]Total Iterations[reset]"),
+	//)
+	samplesBar = progressbar.NewOptions(
 		sampleSetSize,
 		progressbar.OptionEnableColorCodes(true),
 		progressbar.OptionSetDescription("[cyan]Samples[reset]"),
 		progressbar.OptionShowCount(),
-	)*/
+	)
 	mainWg.Add(sampleSetSize)
 	if verbose {
 		fmt.Printf("minSample: %d\nmaxSample: %d\nsampleSetSize: %d\n",
@@ -203,8 +203,8 @@ func main() {
 		average := workerResult.Average
 		devstd := workerResult.DevStd
 		if chart {
-			var scatterChart charts.ScatterData
-			scatterChart.CreateScatter(workerResult)
+			//var scatterChart charts.ScatterData
+			//scatterChart.CreateScatter(workerResult)
 			// Create LinePlot
 			linePlot.PlotName = "SSDs result distribution vs samples"
 			linePlot.Categories = append(linePlot.Categories, strconv.Itoa(sample))

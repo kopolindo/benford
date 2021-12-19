@@ -45,6 +45,12 @@ Result: go...home Alex... :(
 
 ## HowTo
 ### Build
+#### Testing race conditions
+`$ make race`
+It creates a `benford` executable in the same src folder.  
+Limitation 8192 concurrent goroutines.  
+
+#### Actual execution
 `$ make build`  
 It creates a `benford` executable in the same src folder
 
@@ -61,6 +67,8 @@ $ ./benford -h
 Usage of ./benford:
   -chart
         Create a scattered chart in output folder
+  -csv string
+        CSV Output filename
   -human
         Human readable vs CSV readable
   -iterations int
@@ -86,95 +94,33 @@ Usage of ./benford:
 `-version` print the version and build of the program  
 `-chart` generates chart(s) in output folder  
 `-human` print in human readable format  
+`-csv` output results in output folder, with provided file name
 
 ### Examples
 #### Example 1
-Run 10 times with sample of 1000 scores
+Run 200 times iterations (each iterations returns one SSD)  
+Samples spanning from 10000 (vulnerabilities scores) to 20000 (vulnerabilities scores)  
+Output:
+	- one csv file containing: sample, min, max, average, devstd values
+	- one line chart plotting min, max, average (three series overs Y axis) behavior versus sample (X axis)
 ```
-$ ./benford -sample 1000 -iterations 10
-75.88
-62.3
-82.08
-62.26
-43.06
-64.76
-73.14
-91.7
-69.56
-68.82
+$ ./benford -min-sample 10000 -max-sample 20000 -iterations 200 -chart -csv test.csv
+Samples   0% |                                        | (78/10001) [1m9s:2h27m11s]
 ```
-
-#### Example 2
-Run 10 times with sample of 1000 scores, verbose mode
+Output:
 ```
-$ ./benford -sample 1000 -iterations 10 -verbose
-40.66
-not good
-62.04
-not good
-74.96
-not good
-57.08
-not good
-54.8
-not good
-84.46
-not good
-97.64
-not good
-61.48
-not good
-77.08
-not good
-100.54
-not even close
-```
+$ ls output
+'SSDs result distribution vs samples_line.html'   test.csv
 
-## Benchmarks
-
-- OS: Linux 5.15.4-arch1-1
-- Parallel version: 20170922
-
-```$ lscpu | egrep 'Model name|Socket|Thread|NUMA|CPU\(s\)'
-CPU(s):                          8
-On-line CPU(s) list:             0-7
-Model name:                      AMD Ryzen 5 PRO 3500U w/ Radeon Vega Mobile Gfx
-Thread(s) per core:              2
-Socket(s):                       1
-NUMA node(s):                    1
-NUMA node0 CPU(s):               0-7
-```
-Run normal vs parallel
-```
-10^8
-./benford 100000000  12.12s user 1.12s system 106% cpu 12.488 total
-parallel ./benford ::: 100000000  10.77s user 1.94s system 109% cpu 11.613 total
-
-10^9
-./benford 1000000000  393.67s user 221.88s system 117% cpu 8:43.28 total
-parallel ./benford ::: 1000000000  392.62s user 226.67s system 119% cpu 8:37.42 total
-```
-
-- OS: Linux 5.15.2-arch1-1
-- Parallel version: 20170922
-
-```$ lscpu | egrep 'Model name|Socket|Thread|NUMA|CPU\(s\)'
-CPU(s):                          24
-On-line CPU(s) list:             0-23
-Model name:                      AMD Ryzen 9 3900X 12-Core Processor
-Thread(s) per core:              2
-Socket(s):                       1
-NUMA node(s):                    1
-NUMA node0 CPU(s):               0-23
-```
-
-Run normal vs parallel
-```
-10^8
-./benford 100000000  6.55s user 0.28s system 105% cpu 6.460 total
-parallel ./benford ::: 100000000  6.68s user 0.34s system 105% cpu 6.650 total
-
-10^9
-./benford 1000000000  61.77s user 2.32s system 105% cpu 1:00.67 total
-parallel ./benford ::: 1000000000  62.11s user 2.28s system 105% cpu 1:00.96 total
+$ head output/test.csv
+sample,min,max,average,devstd
+10002,52.43,79.79,65.85,4.51
+10006,54.42,75.33,65.21,4.11
+10003,55.12,77.19,65.32,4.32
+10004,57.28,79.51,65.82,4.26
+10001,55.52,75.95,65.55,4.18
+10005,51.90,78.48,65.46,4.12
+10034,52.73,77.86,65.70,4.67
+10007,53.30,76.37,65.46,4.63
+10008,50.76,75.98,65.41,4.30
 ```
