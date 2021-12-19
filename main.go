@@ -1,11 +1,12 @@
 package main
 
 import (
+	"encoding/csv"
 	"flag"
 	"fmt"
 	"math/rand"
 	"os"
-	"sort"
+	"path"
 	"strconv"
 	"sync"
 	"time"
@@ -14,6 +15,8 @@ import (
 	"benford/sampleGeneration"
 	"benford/structure"
 	"benford/utilities"
+
+	"github.com/schollz/progressbar/v3"
 )
 
 const (
@@ -22,8 +25,6 @@ const (
 )
 
 var (
-	thProbs          = [9]float64{0.301, 0.176, 0.125, 0.097, 0.079, 0.067, 0.058, 0.057, 0.046}
-	test             = [9]float64{0.327, 0.149, 0.107, 0.079, 0.076, 0.082, 0.061, 0.055, 0.064}
 	sample           int
 	minSample        int
 	maxSample        int
@@ -34,15 +35,20 @@ var (
 	verbose          bool
 	humanReadable    bool
 	chart            bool
+	csvOutput        string
+	csvFile          *os.File
+	outputFolder     string
+	w                *csv.Writer
 	iterationsWG     sync.WaitGroup
 	sampleWG         sync.WaitGroup
 	mainMutex        sync.Mutex
-	m                sync.Mutex
 	mainWg           sync.WaitGroup
 	linePlot         structure.LinePlot
 	minSerie         structure.LineSerie
 	averageSerie     structure.LineSerie
 	maxSerie         structure.LineSerie
+	samplesBar       *progressbar.ProgressBar
+	iterBar          *progressbar.ProgressBar
 )
 
 func checkConditions() {
@@ -75,6 +81,34 @@ func checkConditions() {
 		minSample = sample
 		maxSample = sample
 	}
+	// If csvOutput is matched, then create csv file and header
+	if utilities.IsFlagPassed("csv") || utilities.IsFlagPassed("chart") {
+		cwd, err := os.Getwd()
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		outputFolder = path.Join(cwd, "output")
+		utilities.MkdirINE(outputFolder)
+		if utilities.IsFlagPassed("csv") {
+			csvFile, err = os.Create(path.Join(outputFolder, csvOutput))
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+			w = csv.NewWriter(csvFile)
+		} else {
+			w = csv.NewWriter(os.Stdout)
+		}
+		if e := w.Write([]string{
+			"sample",
+			"min",
+			"max",
+			"average",
+			"devstd",
+		}); e != nil {
+			fmt.Println(e.Error())
+		}
+		w.Flush()
+	}
 }
 
 func init() {
@@ -83,6 +117,7 @@ func init() {
 	flag.IntVar(&sample, "sample", 0, "Size of the sample to be generated")
 	flag.IntVar(&minSample, "min-sample", -1, "Start from this sample size")
 	flag.IntVar(&maxSample, "max-sample", -1, "Finish with this sample size")
+	flag.StringVar(&csvOutput, "csv", "", "CSV Output filename")
 	flag.BoolVar(&version, "version", false, "Print version")
 	flag.BoolVar(&verbose, "verbose", false, "Verbose, print compliancy")
 	flag.BoolVar(&humanReadable, "human", false, "Human readable vs CSV readable")
@@ -92,33 +127,29 @@ func init() {
 }
 
 // Worker function (for sample)
-func worker(sample int, iterations int, mainWg *sync.WaitGroup, resChan chan structure.Result) {
-	defer mainWg.Done()
+func worker(sample int, iter int, localWg *sync.WaitGroup, resChan chan structure.Result) {
+	defer localWg.Done()
+	//defer samplesBar.Add(1)
 	var res structure.Result
 	var ssdResults []float64
 	var wg sync.WaitGroup
-	mainMutex.Lock()
-	wg.Add(iterations)
+	wg.Add(iter)
 	SSDsResultsChan := make(chan float64, 1)
 	go func() {
 		// Close channel
 		wg.Wait()
 		close(SSDsResultsChan)
 	}()
-	for it := 0; it < iterations; it++ {
+	mainMutex.Lock()
+	for it := 0; it < iter; it++ {
 		// Create channel to make goroutine and main routine communicate
-		go func(sample int, localWg *sync.WaitGroup, result chan float64) {
-			defer localWg.Done()
-			var keys []int
+		go func(samp int, innerWg *sync.WaitGroup, result chan float64) {
+			defer innerWg.Done()
+			defer iterBar.Add(1)
 			// Generate CVSS scores, normalize them (Exp) and take the first digit
-			fdCVSSScores := sampleGeneration.GenerateFirstDigitCVSSScores(sample)
+			fdCVSSScores := sampleGeneration.GenerateFirstDigitCVSSScores(samp)
 			// count ces of first left digits
 			occurrences := utilities.CalcOccurrences(fdCVSSScores)
-			// Here the order part
-			for k := range occurrences {
-				keys = append(keys, k)
-			}
-			sort.Ints(keys)
 			// Communicate with main routine
 			result <- utilities.SSD(occurrences, sample)
 		}(sample, &wg, SSDsResultsChan)
@@ -127,21 +158,31 @@ func worker(sample int, iterations int, mainWg *sync.WaitGroup, resChan chan str
 	for r := range SSDsResultsChan {
 		ssdResults = append(ssdResults, r)
 	}
-	res.Lock()
+	mainMutex.Unlock()
 	res.SSDs = ssdResults
 	res.Sample = sample
 	res.Average = utilities.Average(ssdResults)
 	res.Max = utilities.Max(ssdResults)
 	res.Min = utilities.Min(ssdResults)
 	res.DevStd = utilities.DevStd(ssdResults)
-	res.Unlock()
 	resChan <- res
-	mainMutex.Unlock()
 }
 
 func main() {
 	resultChannel := make(chan structure.Result, 1)
 	sampleSetSize := maxSample - minSample + 1
+	totalIterations := sampleSetSize * iterations
+	iterBar = progressbar.NewOptions(
+		totalIterations,
+		progressbar.OptionEnableColorCodes(true),
+		progressbar.OptionSetDescription("[green]Total Iterations[reset]"),
+	)
+	/*samplesBar = progressbar.NewOptions(
+		sampleSetSize,
+		progressbar.OptionEnableColorCodes(true),
+		progressbar.OptionSetDescription("[cyan]Samples[reset]"),
+		progressbar.OptionShowCount(),
+	)*/
 	mainWg.Add(sampleSetSize)
 	if verbose {
 		fmt.Printf("minSample: %d\nmaxSample: %d\nsampleSetSize: %d\n",
@@ -162,7 +203,6 @@ func main() {
 		average := workerResult.Average
 		devstd := workerResult.DevStd
 		if chart {
-			m.Lock()
 			var scatterChart charts.ScatterData
 			scatterChart.CreateScatter(workerResult)
 			// Create LinePlot
@@ -185,7 +225,6 @@ func main() {
 			linePlot.LineSeries = append(linePlot.LineSeries, minSerie)
 			var lineChart charts.LineData
 			lineChart.CreateLine(linePlot)
-			m.Unlock()
 		}
 		if humanReadable {
 			fmt.Println("Min:", min)
@@ -193,12 +232,20 @@ func main() {
 			fmt.Println("Average:", average)
 			fmt.Println("DevStd", devstd)
 		} else {
-			fmt.Printf("%d;%.2f;%.2f;%.2f;%.2f\n",
-				sample,
-				min,
-				max,
-				average,
-				devstd)
+			if e := w.Write([]string{
+				strconv.Itoa(sample),
+				fmt.Sprintf("%.2f", min),
+				fmt.Sprintf("%.2f", max),
+				fmt.Sprintf("%.2f", average),
+				fmt.Sprintf("%.2f", devstd),
+			}); e != nil {
+				fmt.Println(e.Error())
+			}
+			w.Flush()
 		}
+	}
+	// If csvOutput is matched, then create csv file and header
+	if utilities.IsFlagPassed("csvOutput") {
+		csvFile.Close()
 	}
 }
